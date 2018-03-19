@@ -11,6 +11,7 @@ import site
 config_file = open("config","r")
 
 # Initializations of global variables
+
 DESTINATIONS = []
 MYID = -1
 MYIP = ""
@@ -18,6 +19,7 @@ MYPORT = 0
 MYSOCKET = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 # Number of lines in config file divided by 3 for number of nodes
+
 NUMOFNODES = sum(1 for line in open('config'))/3
 
 for a in range(NUMOFNODES):
@@ -35,11 +37,14 @@ for a in range(NUMOFNODES):
     line = config_file.readline()
     PORT = int(line.rstrip('\n'))
 
-    # Need a socket for each node pair
+    # Decides which node this process will be
 
     if MYID == -1:
-        MYID = int(raw_input("Type in your process number (0-3)"))
+        MYID = int(raw_input("Type in your node ID number (0-3)"))
 
+    # Creates sockets between all pairs of nodes and
+    # appends nodes to a list as a tuple of ID, IP, PORT
+    # and SOCK
 
     if a != MYID:
         SOCK = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -57,8 +62,13 @@ MYSOCKET.bind((
     MYIP, # IP of processNumber 
     MYPORT)) # Port of processNumber
 
+# Separate thread for receiving unicasts
+
 threading.Thread(target=rc.unicast_receive, args = (DESTINATIONS[MYID][3],)).start()
 
+# Send messages to other nodes using the format:
+# send (# of node) (message)
+# type in 'close' to exit to terminal
 
 while 1:
     decide = raw_input("What do you want to do?\n")
