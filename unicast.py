@@ -30,12 +30,13 @@ NUMOFNODES = sum(1 for line in open('config')) - 3
 # Unicast delivery (instructions want it to be called receive)
 # Checks list for 'message' from 'source. If it contains the message, it is delievered
 # and removed from the list
-# Adds uniform random, simulated network delay time
+# Adds uniform random, simulated network delay time. 
+# Min & max multiplied by 1000 for microseconds ---> milliseconds
 
 def unicast_receive(source, message):
     if RECEIVED.__contains__((source,message)):
         RECEIVED.remove((source,message))
-        time = (datetime.datetime.now() + datetime.timedelta(seconds=random.uniform(min,max))).time()
+        time = (datetime.datetime.now() + datetime.timedelta(microseconds=random.uniform(min*1000,max*1000))).time()
         print("Received ", message, " from process ", source, ", system time is ", time, sep='')
 
 # Unicast receive
