@@ -29,7 +29,8 @@ NUMOFNODES = sum(1 for line in open('config')) - 3
 
 # Unicast delivery (instructions want it to be called receive)
 # Checks list for 'message' from 'source. If it contains the message, it is delievered
-# and removed form the list
+# and removed from the list
+# Adds uniform random, simulated network delay time
 
 def unicast_receive(source, message):
     if RECEIVED.__contains__((source,message)):
