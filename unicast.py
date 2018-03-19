@@ -11,18 +11,20 @@ import site
 config_file = open("config","r")
 
 # Initializations of global variables
+
 DESTINATIONS = []
 MYID = -1
 MYIP = ""
 MYPORT = 0
 MYSOCKET = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-# number of nodes in config file
+# Number of nodes in config file
 
-NUMOFNODES = sum(1 for line in open('config')) - 1
+NUMOFNODES = sum(1 for line in open('config')) - 3
 
-minmaxdelay = config_file.readline()
-minmaxdelay = minmaxdelay.rstrip('\n')
+# Take min and max delay from config file
+
+minmaxdelay = config_file.readline().rstrip('\n')
 minandmax = minmaxdelay.split(" ")
 min = float(minandmax[0])
 max = float(minandmax[1])
@@ -33,12 +35,11 @@ for a in range(NUMOFNODES):
 
     # Read in the ID, IP, and PORT from the config file for each of the four connections
 
-    line = config_file.readline()
-    line = line.rstrip('\n')
-    # Strips the new line character from the config file 
+    line = config_file.readline().rstrip('\n')
+
+    # Split line into ID, IP, PORT
 
     linearray = line.split(" ")
-
     ID = int(linearray[0])
     IP = linearray[1]
     PORT = int(linearray[2])
@@ -70,7 +71,7 @@ MYSOCKET.bind((
 
 # Separate thread for receiving unicasts
 
-threading.Thread(target=rc.unicast_receive, args = (DESTINATIONS[MYID][0],DESTINATIONS[MYID][3],)).start()
+threading.Thread(target=rc.unicast_receive, args = (DESTINATIONS[MYID][0],DESTINATIONS[MYID][3],min,max)).start()
 
 # Send messages to other nodes using the format:
 # send (# of node) (message)

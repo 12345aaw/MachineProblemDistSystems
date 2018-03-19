@@ -5,12 +5,12 @@ import random
 
 # Receives a message from sock and prints the message out
 
-def unicast_receive(id, socket):
+def unicast_receive(id, socket, min, max):
     sock = socket
     ID = id
     kill = False
     while not kill:
         data = sock.recv(1024)
         if data == "close": break
-        time = (datetime.datetime.now() + datetime.timedelta(seconds=random.uniform(0.5,1.0))).time()
-        print("Received ", data, " from process ", id, ", system time is ", time, sep='')
+        time = (datetime.datetime.now() + datetime.timedelta(seconds=random.uniform(min,max))).time()
+        print("Received ", data, " from process ", ID, ", system time is ", time, sep='')
