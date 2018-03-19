@@ -114,7 +114,7 @@ MYSOCKET.bind((
     MYIP, # IP of processNumber 
     MYPORT)) # Port of processNumber
 
-# Separate thread for receiving unicasts
+# Separate thread for receiving and listening for unicasts
 
 threading.Thread(target=receive, args = (DESTINATIONS[MYID][0],DESTINATIONS[MYID][3],RECEIVED)).start()
 
