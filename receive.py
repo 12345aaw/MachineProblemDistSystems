@@ -3,14 +3,15 @@ import socket
 import datetime
 import random
 
-# Receives a message from sock and prints the message out
+# Receives a message from sock and queues it for delivery
 
-def unicast_receive(id, socket, min, max):
+def unicast_receive(id, socket, received):
     sock = socket
     ID = id
-    kill = False
-    while not kill:
+    while 1:
         data = sock.recv(1024)
+        received.append((ID,data))
         if data == "close": break
-        time = (datetime.datetime.now() + datetime.timedelta(seconds=random.uniform(min,max))).time()
-        print("Received ", data, " from process ", ID, ", system time is ", time, sep='')
+        
+        
+
