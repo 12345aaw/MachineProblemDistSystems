@@ -4,8 +4,7 @@ import threading
 import site 
 import datetime
 import random
-
-
+import time
 
 # Opens the configuration file
 # The config file lists each node's characteristics, each on a separate line
@@ -68,6 +67,10 @@ def unicast_send(destination,message):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.sendto(myidandmessage, (ip,port))
     print("Sent \"", message, "\" to process ", id, ", system time is ", datetime.datetime.now().time(), sep='')
+
+def channel_delay(destination,message):
+    time.sleep(4)   # Delay for 4 seconds
+    unicast_send(destination,message)
 
 # Take min and max delay from config file
 
