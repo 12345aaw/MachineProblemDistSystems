@@ -14,6 +14,9 @@ import CausalMulticast as c
 
 class node():
 
+    # Initializers
+    # Each node is given its own FIFO, TOTAL, etc. objects, so each node has its own respective sequencers
+
     def __init__(self, ID = -1, IP = "", PORT = 0, SOCKET = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) ):
         self.RECEIVED = []
         self.DESTINATIONS = []
@@ -29,6 +32,8 @@ class node():
         self.BASIC = None
         self.CAUSAL = None
         self.SEQUENCERCOUNTER = 0
+
+    # String representation of node for debugging purposes
 
     def __str__(self):
         return (str(self.MYID) + "|"+ self.MYIP +"|"+ str(self.MYPORT) )
@@ -81,19 +86,23 @@ class node():
                 self.MYID = int(raw_input("Type in your node ID number (0-3) 0 is sequencer for TO"))
 
             # Creates sockets between all pairs of nodes and
-            # appends nodes to a list as a tuple of ID, IP, PORT
-            # and SOCK
+            # appends nodes to a list with instantiation parameters
+            # taken from the config file.
+
             SOCK = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             
+            # If reading self node, update parameters and bind the host and port to the 
+            # node's socket
+
             if a == self.MYID:
                 self.MYIP = IP
                 self.MYPORT = PORT
                 self.MYSOCKET = SOCK
                 self.MYSOCKET.bind((self.MYIP, self.MYPORT)) # Port of processNumber
 
+            # Keep a list of all other nodes called DESTINATIONS
+            
             self.DESTINATIONS.append(node(ID,IP,PORT,SOCK))
-
-        # Bind socket to the process
 
 
     # Method run on separate thread to listen for other nodes sending it messages
@@ -110,21 +119,24 @@ class node():
             if data == "close": break
             threading.Thread(target= self.delay,args=((data,))).start()
 
- 
-                    
+    # The delay function takes care of all of the algorithm parts that
+    # are supposed to come between message reception and message delivery
+    # Bulk of the function is converting from the psuedocode on the slides
+
     def delay(self,data):
 
-            # Delays
+            # Delays are taken from the config file
+
             delaytime = random.uniform(self.MIN,self.MAX)/1000
             sleep(delaytime)
 
-           #Split message into different parts if not causal order
+           #Split message into source ID and message if not causal order (which has a special format)
+
             datasplit = data.split(" ")
             if(self.MULTITYPE!=3): 
                 id = int(datasplit[0])
                 message = datasplit[1]
 
-            
             # UNICAST
 
             if(len(datasplit) == 2):
@@ -134,15 +146,12 @@ class node():
             # FIFO
             # Compares messager on sequencer to vector sequencer. Refer to FIFO algorithm
 
-
-
             elif(self.MULTITYPE == 1): 
                 Rsequencer = int(self.FIFO.RSEQUENCERS[id])
                 Ssequencer = int(datasplit[2])
                 print(data)
                 print(self.FIFO.RSEQUENCERS)
                 if(Ssequencer == Rsequencer + 1):
-                    print("Message accepted")
                     self.FIFO.deliver(self.DESTINATIONS[id],message)
                     self.FIFO.RSEQUENCERS[id] += 1
                     for q in self.FIFO.QUEUE:
@@ -158,7 +167,6 @@ class node():
                 elif(Ssequencer < Rsequencer + 1):
                     print("Message rejected")
                 else:
-                    print("Message appended")
                     self.FIFO.QUEUE.append((id,message,Rsequencer))
 
 
@@ -166,10 +174,17 @@ class node():
 
             elif(self.MULTITYPE == 2):
                 counter = int(datasplit[2])
-                if(self.MYID == 0): # For sequencer
+
+                # Sequencer ID 0 has special functionality. DO NOT send messages from this node while using TOTAL ORDER
+                # Sequencer decides on how messages should be ordered.
+
+                if(self.MYID == 0):
                     message = str(id) + " " + message + " " + str(counter) + " order " + str(self.SEQUENCERCOUNTER)
                     self.BASIC.multicast(self.DESTINATIONS[1:], message)
                     self.SEQUENCERCOUNTER = self.SEQUENCERCOUNTER + 1
+
+                # Otherwise, receive ordering messages from the sequencer. Queue if waiting on other messages
+
                 else:
                     if(len(datasplit) > 3):
                         if(datasplit[3] == "order"):
@@ -187,7 +202,13 @@ class node():
                 datasplit = data.split(". ")
                 id = int(datasplit[0])
                 message = datasplit[1]
+
+                # Use json to convert piggybacked vector timestamp from string to list
+
                 vectortime = json.loads(datasplit[2])
+
+                # All taken from the causal algorithm psuedocode
+
                 if(id != self.MYID):
                     self.CAUSAL.QUEUE.append((vectortime,message,id))
                     selfvectortime = self.CAUSAL.VECTORTIMESTAMPS
@@ -206,6 +227,7 @@ class node():
                     self.CAUSAL.deliver(self.DESTINATIONS[id],message)
                     self.CAUSAL.VECTORTIMESTAMPS[id] += 1
 
+    # Take user input to make messages and to decide who to send them to
 
     def action_loop(self):
 

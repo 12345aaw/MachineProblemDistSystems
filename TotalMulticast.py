@@ -1,6 +1,9 @@
 from MulticastAbstract import MulticastAbstract
 import BasicMulticast as m
 class TotalMulticast( MulticastAbstract ):
+
+    # Very similar in nature to the FIFO and CAUSAL Mulitcast classes
+
     def __init__(self,selfnode):
         self.COUNTER = 0
         self.SELFNODE = selfnode
