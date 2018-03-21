@@ -2,3 +2,8 @@ receive.pyc
 send.pyc
 send.py
 receive.py
+unicast.pyc
+BasicMulticast.pyc
+FIFOMulticast.pyc
+MulticastAbstract.pyc
+node.pyc
