@@ -1,6 +1,5 @@
 from MulticastAbstract import MulticastAbstract
 import unicast as u
-
 class BasicMulticast( MulticastAbstract ):
     RECEIVED = []
     def multicast(self, group, message):
