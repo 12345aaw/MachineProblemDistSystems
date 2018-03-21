@@ -11,7 +11,7 @@ import random
 # Min & max multiplied by 1000 for microseconds ---> milliseconds
 
 def unicast_receive(selfnode, source, message):
-    time = (datetime.datetime.now() + datetime.timedelta(microseconds=random.uniform(source.MIN*1000,source.MAX*1000))).time()
+    time = datetime.datetime.now()
     print("Received \"", message, "\" from process ", source.MYID, ", system time is ", time, sep='')
 
 
