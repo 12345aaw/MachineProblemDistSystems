@@ -37,7 +37,10 @@ class node():
 
         NUMOFNODES = sum(1 for line in open('config')) - 2
 
+        # Instantiate FIFO Object
+
         self.FIFO = f.FIFOMulticast(self,NUMOFNODES)
+
         # Take min and max delay from config file
 
         minmaxdelay = config_file.readline().rstrip('\n')
@@ -81,19 +84,35 @@ class node():
         # Bind socket to the process
 
 
+    # Method run on separate thread to listen for other nodes sending it messages
+    # Reacts differently to different message types (unicast, FIFO, etc.)
+
     def receive(self):
+
+
         while 1:
+
+            # Socket receiving data. Closes the thread if "close" is received.
+
             data = self.MYSOCKET.recv(1024)
             if data == "close": break
+
+            #Split message into different parts
+
             datasplit = data.split(" ") 
             id = int(datasplit[0])
             data = datasplit[1]
+
+            # UNICAST
+
             if(len(datasplit) == 2):
                 self.RECEIVED.append((id,data))
                 u.unicast_receive(self,self.DESTINATIONS[id],data)
             
-            
-            elif(self.MULTITYPE == 1): #FIFO
+            # FIFO
+            # Compares messager on sequencer to vector sequencer. Refer to FIFO algorithm
+
+            elif(self.MULTITYPE == 1): 
                 Rsequencer = int(self.FIFO.RSEQUENCERS[id])
                 Ssequencer = int(datasplit[2])
                 if(Ssequencer == Rsequencer + 1):
@@ -114,9 +133,13 @@ class node():
 
     def action_loop(self):
 
+        # Receive thread
+
         threading.Thread(target= self.receive).start()
+
         # Send messages to other nodes using the format:
-        # send (# of node) (message)
+        # For unicast:      send (# of node) (message)
+        # For multicast:    msend (message)
         # type in 'close' to exit to terminal   
         
         while 1:
@@ -132,6 +155,8 @@ class node():
                 sendString = decide[6:]
                 if(self.MULTITYPE == 1):
                     self.FIFO.multicast(self.DESTINATIONS,str(self.MYID) + " " + sendString)
+
+# Run the node
 
 run = node()
 run.make_node()
