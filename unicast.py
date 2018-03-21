@@ -26,7 +26,7 @@ def unicast_send(destination,message):
     PORT = destination.MYPORT
     msg = message
     messagesplit = message.split(" ")
-    if(len(messagesplit)==2):
+    if(len(messagesplit)>=2):
         msgid = messagesplit[0]
         msg = messagesplit[1]
     #message = "u " + message
