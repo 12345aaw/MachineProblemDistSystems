@@ -16,6 +16,5 @@ class FIFOMulticast( MulticastAbstract ):
         a.multicast(group,message)
 
     def deliver(self, source,message):
-        self.RSEQUENCERS[source.MYID] = self.RSEQUENCERS[source.MYID] + 1
         a = m.BasicMulticast()
         a.deliver(self.SELFNODE,source,message)

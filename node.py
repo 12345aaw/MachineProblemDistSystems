@@ -124,15 +124,7 @@ class node():
                 id = int(datasplit[0])
                 message = datasplit[1]
 
-            def FIFOqueueListener(Ssequencer):
-                while(len(self.FIFO.QUEUE)):
-                    for queued in self.FIFO.QUEUE:
-                        qid = queued[0]
-                        qdata = queued[1]
-                        qRsequencer = queued[2]
-                        if(Ssequencer== qRsequencer + 1):
-                            self.FIFO.deliver(self.DESTINATIONS[qid],qdata)
-                            self.FIFO.QUEUE.remove(queued)
+            
             # UNICAST
 
             if(len(datasplit) == 2):
@@ -147,17 +139,28 @@ class node():
             elif(self.MULTITYPE == 1): 
                 Rsequencer = int(self.FIFO.RSEQUENCERS[id])
                 Ssequencer = int(datasplit[2])
+                print(data)
+                print(self.FIFO.RSEQUENCERS)
                 if(Ssequencer == Rsequencer + 1):
                     print("Message accepted")
                     self.FIFO.deliver(self.DESTINATIONS[id],message)
                     self.FIFO.RSEQUENCERS[id] += 1
+                    for q in self.FIFO.QUEUE:
+                        for queued in self.FIFO.QUEUE:
+                            qid = queued[0]
+                            qdata = queued[1]
+                            qRsequencer = queued[2]
+                            if(Ssequencer== qRsequencer + 1):
+                                self.FIFO.deliver(self.DESTINATIONS[qid],qdata)
+                                self.FIFO.RSEQUENCERS[qid] += 1
+                                self.FIFO.QUEUE.remove(queued)
 
                 elif(Ssequencer < Rsequencer + 1):
                     print("Message rejected")
                 else:
                     print("Message appended")
                     self.FIFO.QUEUE.append((id,message,Rsequencer))
-                    threading.Thread(target=FIFOqueueListener, args=((Ssequencer,))).start()
+
 
             # Total Order
 
@@ -170,13 +173,14 @@ class node():
                 else:
                     if(len(datasplit) > 3):
                         if(datasplit[3] == "order"):
+                            self.TOTAL.QUEUE.append(data.split(" "))
+                            
                             for a in self.TOTAL.QUEUE:
                                 for b in self.TOTAL.QUEUE:
-                                    if(self.SEQUENCERCOUNTER == self.TOTAL.COUNTER and b[1]==id and b[2]==counter):
+                                    if(self.TOTAL.COUNTER == int(b[4])):
                                         self.TOTAL.deliver(self.DESTINATIONS[id],message)
-                                        self.TOTAL.COUNTER = self.SEQUENCERCOUNTER + 1
-                    else:
-                        self.TOTAL.QUEUE.append((message, id, counter, self.SEQUENCERCOUNTER))
+                                        self.TOTAL.QUEUE.remove(b)
+                                        self.TOTAL.COUNTER = self.TOTAL.COUNTER + 1
         
             # Causal Order
             elif(self.MULTITYPE == 3):
